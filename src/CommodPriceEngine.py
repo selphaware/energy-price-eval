@@ -27,7 +27,7 @@ class CommodPriceEngine(object):
         } if sheet_names is None else sheet_names
         eia_files = next(os.walk(data_folder))[2]
         for eia_file in eia_files:
-            if ("~" == eia_file[0]) or ("xls" not in eia_file.split(".")[1]):
+            if ("~" == eia_file[0]) or ("xls" not in eia_file.split(".")[1].lower()):
                 continue
             xl = pd.ExcelFile(os.path.join(data_folder, eia_file))
             sheet_name = None
@@ -67,6 +67,8 @@ class CommodPriceEngine(object):
         raw_folder = self.raw_prices_dir
         raw_files = next(os.walk(raw_folder))[2]
         for raw_file in raw_files:
+            if "csv" not in raw_file.split(".")[1].lower():
+                continue
             old_format = "old_format" in raw_file
             header = [0] if old_format else [0, 1]
             df = pd.read_csv(os.path.join(raw_folder, raw_file), header=header)
@@ -110,6 +112,6 @@ class CommodPriceEngine(object):
             self.build_single_price_matrix(commod_id)
 
     def main(self):
-        self.extract_raw_prices()
+        #self.extract_raw_prices()
         self.transform_prices()
         self.build_price_matrix()
