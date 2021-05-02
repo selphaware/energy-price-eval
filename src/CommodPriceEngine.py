@@ -19,7 +19,6 @@ class CommodPriceEngine(object):
 
     def extract_raw_prices(self, sheet_names=None):
         data_folder = self.input_dir
-        out_folder = self.output_dir
         sheet_names = {
             "2tab": ("new_format", [2, 3]),
             " Prices US": ("old_format", [2]),
@@ -111,7 +110,8 @@ class CommodPriceEngine(object):
         for commod_id in self.commod_ids:
             self.build_single_price_matrix(commod_id)
 
-    def main(self):
-        #self.extract_raw_prices()
+    def main(self, acquire=True):
+        if acquire:
+            self.extract_raw_prices()
         self.transform_prices()
         self.build_price_matrix()

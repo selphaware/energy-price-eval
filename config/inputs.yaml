@@ -1,6 +1,8 @@
 input_dir: ../data/input
 output_dir: ../data/output
 
+acquire: False
+
 commod_ids:
     # Crude Oil
     - WTIPUUS   # West Texas Intermediate Spot Average
@@ -28,7 +30,8 @@ eval_params:
   metrics:
     - mae  # mean abs. error
     - mse  # mean sq. error
-    - rms  # root mean square
+    - rmse  # root mean square
+    - max_error
   time_horizons:
     - 1
     - 2
