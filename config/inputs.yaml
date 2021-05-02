@@ -1,0 +1,38 @@
+input_dir: ../data/input
+output_dir: ../data/output
+
+commod_ids:
+    # Crude Oil
+    - WTIPUUS   # West Texas Intermediate Spot Average
+    - BREPUUS   # Brent Spot Average
+
+    # Liquid Fuels - Refiner prices for resale
+    - MGWHUUS  # Gasoline
+    - DSWHUUS  # Diesel Fuel
+    # TODO: Fuel Oil
+
+    # Liquid Fuels - Retail prices including Texas
+    - MGRARUS  # Gasoline Regular Grade
+    - MGEIAUS  # Gasoline All Grades
+    - DSRTUUS  # On-highway Diesel Fuel
+    - D2RCAUS  # Heating Oil
+
+    # Natural Gas
+    - NGHHMCF  # Henry Hub Spot ($ per 1000 cubic feet)
+    - NGRCUUS  # Retail prices - residential sector
+
+    # Electricity
+    - ESRCUUS  # Retail prices - residential sector
+
+eval_params:
+  metrics:
+    - mae  # mean abs. error
+    - mse  # mean sq. error
+    - rms  # root mean square
+  time_horizons:
+    - 1
+    - 2
+    - 3
+    - 6
+    - 9
+    - 12
