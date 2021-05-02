@@ -93,9 +93,15 @@ class CommodPriceEngine(object):
 
     def build_single_price_matrix(self, commod_id: str):
         tdf = pd.read_csv(self.transform_file)
-        df = tdf[tdf["commodity_id"] == commod_id].copy().sort_values(
+        prev_df = tdf[tdf["commodity_id"] == commod_id].copy().sort_values(
             by=["ref_date", "date"], ascending=True
         )
+        ret = []
+        for in_ref_date in sorted(tdf["ref_date"].unique()):
+            in_df = prev_df[prev_df["ref_date"] == in_ref_date].copy()
+            in_df["pct_diff"] = in_df["price"].pct_change()
+            ret.append(in_df)
+        df = pd.concat(ret).sort_values(by=["ref_date", "date"], ascending=True)
         df.drop(columns=["commodity_id"], inplace=True)
         piv_df = df.pivot_table(
             index=['ref_date'],
@@ -103,7 +109,15 @@ class CommodPriceEngine(object):
             values='price'
         )
         piv_df.to_csv(
-            os.path.join(self.matrix_price_dir, "{}.csv".format(commod_id))
+            os.path.join(self.matrix_price_dir, "{}_price.csv".format(commod_id))
+        )
+        piv_df = df.pivot_table(
+            index=['ref_date'],
+            columns=['date'],
+            values='pct_diff'
+        )
+        piv_df.to_csv(
+            os.path.join(self.matrix_price_dir, "{}_pct.csv".format(commod_id))
         )
 
     def build_price_matrix(self):

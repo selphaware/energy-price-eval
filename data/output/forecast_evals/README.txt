@@ -1,1 +1,1 @@
-Final forecast evaluation results are saved here
+Final forecast evaluation results are saved here for both Prices and Pct Changes

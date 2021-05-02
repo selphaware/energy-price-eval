@@ -1,7 +1,7 @@
 input_dir: ../data/input
 output_dir: ../data/output
 
-acquire: True
+acquire: False
 
 commod_ids:
     # Crude Oil
@@ -31,7 +31,7 @@ eval_params:
     - mae  # mean abs. error
     - mse  # mean sq. error
     - rmse  # root mean square
-    - max_error
+    - max_error  # max_error
   time_horizons:
     - 1
     - 2

@@ -26,8 +26,8 @@ class EvalForecastEngine(object):
         self.metrics = params.get('eval_params')['metrics']
         self.time_horizons = params.get('eval_params')['time_horizons']
 
-    def eval_forecasts(self, commod_id: str):
-        ff = pd.read_csv(os.path.join(self.matrix_price_dir, f"{commod_id}.csv"),
+    def eval_forecasts(self, commod_id: str, dat_type: str):
+        ff = pd.read_csv(os.path.join(self.matrix_price_dir, f"{commod_id}_{dat_type}.csv"),
                          parse_dates=["ref_date"],
                          date_parser=lambda x: datetime.strptime(x, '%Y-%m-%d'))
         ret = {f"{x}M_{y}": [] for x, y in product(self.time_horizons, self.metrics)}
@@ -68,8 +68,9 @@ class EvalForecastEngine(object):
         df = df[["commod_id", "ref_date"] + [f"{x}M_{y}" for x, y in
                                              product(self.time_horizons,
                                                      self.metrics)]]
-        df.to_csv(os.path.join(self.eval_dir, f"{commod_id}.csv"), index=False)
+        df.to_csv(os.path.join(self.eval_dir, f"{commod_id}_{dat_type}.csv"), index=False)
 
     def eval_all_forecasts(self):
         for commod_id in self.commod_ids:
-            self.eval_forecasts(commod_id)
+            self.eval_forecasts(commod_id, "price")
+            self.eval_forecasts(commod_id, "pct")
