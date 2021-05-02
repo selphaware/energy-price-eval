@@ -1,7 +1,7 @@
 input_dir: ../data/input
 output_dir: ../data/output
 
-acquire: False
+acquire: True
 
 commod_ids:
     # Crude Oil
@@ -11,7 +11,7 @@ commod_ids:
     # Liquid Fuels - Refiner prices for resale
     - MGWHUUS  # Gasoline
     - DSWHUUS  # Diesel Fuel
-    # TODO: Fuel Oil
+    - D2WHUUS  # Fuel Oil (labelled as Heating Oil)
 
     # Liquid Fuels - Retail prices including Texas
     - MGRARUS  # Gasoline Regular Grade
