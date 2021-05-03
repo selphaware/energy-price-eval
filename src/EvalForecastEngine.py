@@ -7,7 +7,7 @@ import numpy as np
 from src.logger import logger
 from sklearn.metrics import mean_absolute_error as mae
 from sklearn.metrics import mean_squared_error as mse
-from sklearn.metrics import max_error as max_error
+from sklearn.metrics import max_error as mre
 
 """
 
@@ -44,7 +44,7 @@ class EvalForecastEngine(object):
             "mae": mae,             # MEAN ABSOLUTE ERROR
             "mse": mse,             # MEAN SQUARED ERROR
             "rmse": self.rmse,      # ROOT MEAN SQUARED ERROR
-            "mre": max_error        # MAX RESIDUAL ERROR
+            "mre": mre              # MAX RESIDUAL ERROR
         }
 
     @staticmethod
