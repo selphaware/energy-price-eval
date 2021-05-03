@@ -43,9 +43,22 @@ class EvalForecastEngine(object):
         self.eval_funcs = {
             "mae": mae,             # MEAN ABSOLUTE ERROR
             "mse": mse,             # MEAN SQUARED ERROR
-            "rmse": mse,            # ROOT MEAN SQUARED ERROR
+            "rmse": self.rmse,            # ROOT MEAN SQUARED ERROR
             "max_error": max_error  # MAX ERROR
         }
+
+    @staticmethod
+    def rmse(y1: np.array, y2: np.array) -> float:
+        """
+        We have a function for RMSE since MSE needs to be called with
+        param squared=False. i.e. sklearn doesnt have direct RMSE func
+        No need to create functions for rest as they reside in self.eval_funcs
+
+        :param y1: forecast_vals
+        :param y2: true_vals
+        :return: RMSE val (float)
+        """
+        return mse(y1, y2, squared=False)
 
     def eval_forecasts(self, commod_id: str, dat_type: str) -> None:
         """
@@ -110,18 +123,11 @@ class EvalForecastEngine(object):
                 ]
 
                 # evaluate forecasts and append results in ret
+                eval_val = None
                 if true_dat.shape[1]:
-                    if metric == "rmse":
-                        ret[f"{time_h}M_{metric}"].append(
-                            self.eval_funcs[metric](np.array(fore_dat),
-                                                    np.array(true_dat),
-                                                    squared=False))
-                    else:
-                        ret[f"{time_h}M_{metric}"].append(
-                            self.eval_funcs[metric](np.array(fore_dat),
-                                                    np.array(true_dat)))
-                else:
-                    ret[f"{time_h}M_{metric}"].append(None)
+                    eval_val = self.eval_funcs[metric](np.array(fore_dat),
+                                                       np.array(true_dat))
+                ret[f"{time_h}M_{metric}"].append(eval_val)
 
         # save forecast evaluations for all ref_date's
         df = pd.DataFrame(ret)
