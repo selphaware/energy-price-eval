@@ -1,0 +1,4 @@
+# energy_price_forecast
+US EIA Energy Price Forecast Evaluation codebase
+
+To configure, check config/input.yaml
