@@ -44,7 +44,7 @@ class EvalForecastEngine(object):
             "mae": mae,             # MEAN ABSOLUTE ERROR
             "mse": mse,             # MEAN SQUARED ERROR
             "rmse": self.rmse,      # ROOT MEAN SQUARED ERROR
-            "max_error": max_error  # MAX ERROR
+            "mre": max_error        # MAX RESIDUAL ERROR
         }
 
     @staticmethod
