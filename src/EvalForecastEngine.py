@@ -4,6 +4,7 @@ from itertools import product
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import numpy as np
+from src.logger import logger
 from sklearn.metrics import mean_absolute_error as mae
 from sklearn.metrics import mean_squared_error as mse
 from sklearn.metrics import max_error as max_error
@@ -27,6 +28,7 @@ class EvalForecastEngine(object):
         self.time_horizons = params.get('eval_params')['time_horizons']
 
     def eval_forecasts(self, commod_id: str, dat_type: str):
+        logger.info("Evaluating all forecasts")
         ff = pd.read_csv(os.path.join(self.matrix_price_dir, f"{commod_id}_{dat_type}.csv"),
                          parse_dates=["ref_date"],
                          date_parser=lambda x: datetime.strptime(x, '%Y-%m-%d'))

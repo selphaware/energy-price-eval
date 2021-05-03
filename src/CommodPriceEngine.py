@@ -4,6 +4,7 @@ from pandas import melt
 import numpy as np
 import calendar
 from datetime import datetime
+from src.logger import logger
 
 
 class CommodPriceEngine(object):
@@ -18,6 +19,7 @@ class CommodPriceEngine(object):
         self.matrix_price_dir = os.path.join(self.output_dir, "matrix_price")
 
     def extract_raw_prices(self, sheet_names=None):
+        logger.info("Extracting raw pricing data")
         data_folder = self.input_dir
         sheet_names = {
             "2tab": ("new_format", [2, 3]),
@@ -62,6 +64,7 @@ class CommodPriceEngine(object):
         return f"{yr}-{mn}"
 
     def transform_prices(self):
+        logger.info("Transforming raw pricing data")
         ret = []
         raw_folder = self.raw_prices_dir
         raw_files = next(os.walk(raw_folder))[2]
@@ -121,6 +124,7 @@ class CommodPriceEngine(object):
         )
 
     def build_price_matrix(self):
+        logger.info("Building pricing matrix")
         for commod_id in self.commod_ids:
             self.build_single_price_matrix(commod_id)
 
