@@ -43,7 +43,7 @@ class EvalForecastEngine(object):
         self.eval_funcs = {
             "mae": mae,             # MEAN ABSOLUTE ERROR
             "mse": mse,             # MEAN SQUARED ERROR
-            "rmse": self.rmse,            # ROOT MEAN SQUARED ERROR
+            "rmse": self.rmse,      # ROOT MEAN SQUARED ERROR
             "max_error": max_error  # MAX ERROR
         }
 
