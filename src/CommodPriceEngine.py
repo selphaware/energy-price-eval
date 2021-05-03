@@ -13,7 +13,10 @@ from src.logger import logger
     and pivots (rows = ref_date, cols = hist/forecast dates, vals =
     price OR percentage change in price).
     
-    Data is saved in output folder.
+    Data is saved in output folder:
+    - data/output/raw_prices (raw csv prices)
+    - data/output/transform (intermediate)
+    - data/output/matrix_price (price matrix for each commod id)
         
 """
 
@@ -21,9 +24,11 @@ from src.logger import logger
 class CommodPriceEngine(object):
     def __init__(self, **params):
         """
-        constructor initialising list of commodities and input/output dirs
+        constructor initialising list of commod ids and input/output dirs
+
         :param params:
         """
+        logger.info(f"Initialising CommodPriceEngine. Params = {str(params)}")
         params = params.get('params')
         self.commod_ids = params.get('commod_ids')
         self.input_dir = params.get('input_dir')
@@ -37,6 +42,7 @@ class CommodPriceEngine(object):
     def extract_raw_prices(self, input_sheets: dict = None) -> None:
         """
         Extracts raw prices from EIA xls and xlsx files
+
         :param input_sheets: sheet names and headers to extract from
         :return: saves raw files in data/raw_prices
         """
@@ -147,7 +153,7 @@ class CommodPriceEngine(object):
             df = pd.read_csv(os.path.join(raw_folder, raw_file), header=header)
             df = df[df[df.columns[0]].isin(self.commod_ids)]
 
-            # set ref_date indexing
+            # set ref_date indexing (nuance for old format is applied)
             ref_date_idx = "('ref_date', '0')" if old_format else ("ref_date",
                                                                    "0")
             df.set_index([df.columns[0], ref_date_idx], inplace=True)
@@ -187,6 +193,8 @@ class CommodPriceEngine(object):
         :param commod_id: e.g. WTIPUUS
         :return: saves price matrix for a commod id in data/output/matrix_price
         """
+        logger.info(f"{commod_id}: Building price and pct diff matrix")
+
         # read full transform file and filter on specific commod id
         tdf = pd.read_csv(self.transform_file)
         prev_df = tdf[tdf["commodity_id"] == commod_id].copy().sort_values(
@@ -229,7 +237,7 @@ class CommodPriceEngine(object):
 
         :return: saves all price matrix outputs to data/output/matrix_price
         """
-        logger.info("Building pricing matrix")
+        logger.info("Building pricing matrix for ALL Commod ID's")
         for commod_id in self.commod_ids:
             self.build_single_price_matrix(commod_id)
 
@@ -241,6 +249,7 @@ class CommodPriceEngine(object):
                         True = extract prices from EIA files into raw csv's
         :return: saves outputs in data/output
         """
+        logger.info("CommodPriceEngine MAIN started")
         if acquire:
             self.extract_raw_prices()
         self.transform_prices()
