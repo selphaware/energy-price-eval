@@ -5,6 +5,18 @@ import calendar
 from datetime import datetime
 from src.logger import logger
 
+"""
+
+    class: CommodPriceEngine
+    
+    This class extracts raw prices from EIA files, transforms,
+    and pivots (rows = ref_date, cols = hist/forecast dates, vals =
+    price OR percentage change in price).
+    
+    Data is saved in output folder.
+        
+"""
+
 
 class CommodPriceEngine(object):
     def __init__(self, **params):
@@ -18,7 +30,8 @@ class CommodPriceEngine(object):
         self.output_dir = params.get('output_dir')
         self.raw_prices_dir = os.path.join(self.output_dir, "raw_prices")
         self.transform_dir = os.path.join(self.output_dir, "transform")
-        self.transform_file = os.path.join(self.transform_dir, "full_transform.csv")
+        self.transform_file = os.path.join(self.transform_dir,
+                                           "full_transform.csv")
         self.matrix_price_dir = os.path.join(self.output_dir, "matrix_price")
 
     def extract_raw_prices(self, input_sheets: dict = None) -> None:
@@ -66,9 +79,9 @@ class CommodPriceEngine(object):
             ref_date = eia_file.split(".")[0]
             ref_date = ref_date.split("_")[0]
 
-            # extract month and year: assuming all input reports will be in this century
+            # extract month and year
             mth = ref_date[0:3]
-            yr = "20" + ref_date[3:]
+            yr = "20" + ref_date[3:]  # pre: input files will be in this century
 
             # set ref_date and save raw prices as csv
             df[("ref_date", "0")] = f"{yr}-{mth}"
@@ -80,11 +93,12 @@ class CommodPriceEngine(object):
                 ), index=False)
 
     @staticmethod
-    def cnvt_date_fmt(inp_date: str):
+    def convert_date_fmt(inp_date: str) -> str:
         """
-        static function to convert input string date to date format YYYY-MMM
+        static function to convert input string date to format YYYY-MMM
+
         :param inp_date: input date string
-        :return: datetime format YYYY-MMM (3 letter month name)
+        :return: str format YYYY-MMM (3 letter month name)
         """
         # format date to YYYY-MM
         res = datetime.strptime(inp_date, "%Y%m").strftime("%Y-%m")
@@ -103,11 +117,13 @@ class CommodPriceEngine(object):
         # return formatted date of YYYY-MMM
         return f"{yr}-{mn}"
 
-    def transform_prices(self):
+    def transform_prices(self) -> None:
         """
         loops through all files in raw_prices dir and transforms to:
         commod_id, ref_date, (historical/forecast) date, price
-        :return:
+
+        :return: saves full transform file of
+                 all commod ids in data/output/transform
         """
         logger.info("Transforming raw pricing data")
 
@@ -132,14 +148,16 @@ class CommodPriceEngine(object):
             df = df[df[df.columns[0]].isin(self.commod_ids)]
 
             # set ref_date indexing
-            ref_date_idx = "('ref_date', '0')" if old_format else ("ref_date", "0")
+            ref_date_idx = "('ref_date', '0')" if old_format else ("ref_date",
+                                                                   "0")
             df.set_index([df.columns[0], ref_date_idx], inplace=True)
             df.drop(list(df.columns[0:1]), inplace=True, axis=1)
 
-            # transpose dataframe and format dates depending on new or old format
+            # transpose df and format dates depending on new or old format
             df = df.T
             df["date"] = df.index
-            date_cnvt_func = self.cnvt_date_fmt if old_format else lambda x: f"{x[0]}-{x[1]}"
+            date_cnvt_func = self.convert_date_fmt if old_format \
+                else lambda x: f"{x[0]}-{x[1]}"
             df["date"] = df["date"].apply(date_cnvt_func)
             res = melt(df, id_vars=["date"])
 
@@ -159,11 +177,23 @@ class CommodPriceEngine(object):
             index=False
         )
 
-    def build_single_price_matrix(self, commod_id: str):
+    def build_single_price_matrix(self, commod_id: str) -> None:
+        """
+        picks up transformed file for a commod id and builds price
+        matrix of: rows = reference dates (date of when file is published),
+        columns = historical / forecast dates.
+        values = prices OR percentage diff
+
+        :param commod_id: e.g. WTIPUUS
+        :return: saves price matrix for a commod id in data/output/matrix_price
+        """
+        # read full transform file and filter on specific commod id
         tdf = pd.read_csv(self.transform_file)
         prev_df = tdf[tdf["commodity_id"] == commod_id].copy().sort_values(
             by=["ref_date", "date"], ascending=True
         )
+
+        # calculate percentage differences on price
         ret = []
         for in_ref_date in sorted(tdf["ref_date"].unique()):
             in_df = prev_df[prev_df["ref_date"] == in_ref_date].copy()
@@ -171,14 +201,19 @@ class CommodPriceEngine(object):
             ret.append(in_df)
         df = pd.concat(ret).sort_values(by=["ref_date", "date"], ascending=True)
         df.drop(columns=["commodity_id"], inplace=True)
+
+        # pivot & save. rows = ref_date, cols = date, vals = price
         piv_df = df.pivot_table(
             index=['ref_date'],
             columns=['date'],
             values='price'
         )
         piv_df.to_csv(
-            os.path.join(self.matrix_price_dir, "{}_price.csv".format(commod_id))
+            os.path.join(self.matrix_price_dir,
+                         "{}_price.csv".format(commod_id))
         )
+
+        # pivot & save. rows = ref_date, cols = date, vals = percentage diff
         piv_df = df.pivot_table(
             index=['ref_date'],
             columns=['date'],
@@ -188,12 +223,24 @@ class CommodPriceEngine(object):
             os.path.join(self.matrix_price_dir, "{}_pct.csv".format(commod_id))
         )
 
-    def build_price_matrix(self):
+    def build_price_matrix(self) -> None:
+        """
+        build all price matrix for all commod id's
+
+        :return: saves all price matrix outputs to data/output/matrix_price
+        """
         logger.info("Building pricing matrix")
         for commod_id in self.commod_ids:
             self.build_single_price_matrix(commod_id)
 
-    def main(self, acquire=True):
+    def main(self, acquire=True) -> None:
+        """
+        run all functions in order: extract, transform, price matrix
+
+        :param acquire: False = read already extracted raw csv's
+                        True = extract prices from EIA files into raw csv's
+        :return: saves outputs in data/output
+        """
         if acquire:
             self.extract_raw_prices()
         self.transform_prices()
