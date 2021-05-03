@@ -16,14 +16,14 @@ def main() -> None:
 
     # Instantiating pricing engine which builds the price matrix per commod id
     cpe = CommodPriceEngine(params={
-        "commod_ids": cfg['commod_ids'],
+        "commod_ids": cfg['commod_ids'].keys(),
         "input_dir": cfg['input_dir'],
         "output_dir": cfg['output_dir'],
     })
 
     # Instantiating evaluation forecast engine which evaluates all forecasts
     eve = EvalForecastEngine(params={
-        "commod_ids": cfg['commod_ids'],
+        "commod_ids": cfg['commod_ids'].keys(),
         "output_dir": cfg['output_dir'],
         "eval_params": cfg['eval_params']
     })
