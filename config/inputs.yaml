@@ -3,7 +3,7 @@ output_dir: ../data/output
 
 # set this to False to skip extracting prices from the EIA files
 # set this to True to extract prices from files manually downloaded via https://www.eia.gov/outlooks/steo/outlook.php#issues2021
-acquire: False
+acquire: True
 
 commod_ids:
     # Crude Oil
